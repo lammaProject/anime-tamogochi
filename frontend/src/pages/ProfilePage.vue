@@ -25,7 +25,7 @@ function goToChat(entry: ChatEntry) {
   const img =
     entry.data?.image.compressed?.url || entry.data?.image.original?.url || "";
   const name = entry.data?.anime.character || "";
-  router.push({ path: `/chat/${entry.catgirl_id}`, query: { name, img, routePath: '/profile'  } });
+  router.push({ path: `/chat/${entry.catgirl_id}`, query: { name, img, path: '/profile'  } });
 }
 
 function formatTime(iso: string) {
