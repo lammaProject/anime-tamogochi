@@ -12,6 +12,7 @@ const auth   = useAuthStore();
 const isHome    = computed(() => route.path === "/");
 const isLogin   = computed(() => route.path === "/login");
 const isChat    = computed(() => route.path.startsWith("/chat/"));
+const isProfile = computed(() => route.path === "/profile");
 </script>
 
 <template>
@@ -68,6 +69,20 @@ const isChat    = computed(() => route.path.startsWith("/chat/"));
             </svg>
             Свайпать
           </span>
+        </button>
+
+        <!-- Profile -->
+        <button
+          class="w-9 h-9 rounded-2xl border transition-all duration-200 flex items-center justify-center"
+          :class="isProfile
+            ? 'bg-violet-500/20 border-violet-400/30 text-violet-300'
+            : 'bg-white/5 border-white/10 text-white/40 hover:text-white/80 hover:bg-white/10'"
+          title="Профиль"
+          @click="router.push('/profile')"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
         </button>
 
         <!-- Logout -->

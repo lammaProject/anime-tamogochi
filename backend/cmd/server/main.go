@@ -56,6 +56,7 @@ func main() {
 	protected.HandleFunc("/api/liked/{catgirlId}", handler.RemoveLiked).Methods("DELETE", "OPTIONS")
 
 	// Chat REST API
+	protected.HandleFunc("/api/chats", handler.GetChats).Methods("GET", "OPTIONS")
 	protected.HandleFunc("/api/chat/{catgirlId}", handler.GetChatHistory).Methods("GET", "OPTIONS")
 	protected.HandleFunc("/api/chat/{catgirlId}", handler.SendMessage).Methods("POST", "OPTIONS")
 

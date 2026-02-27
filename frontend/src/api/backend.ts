@@ -37,6 +37,16 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface ChatEntry {
+  catgirl_id: string;
+  data: import("./type").NekosImageData | null;
+  last_message_at: string;
+  last_message: string;
+  message_count: number;
+}
+
+export const getChats = () => api.get<ChatEntry[]>("/api/chats");
+
 export const getChatHistory = (catgirlId: string) =>
   api.get<ChatMessage[]>(`/api/chat/${catgirlId}`);
 

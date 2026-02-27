@@ -112,6 +112,69 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GET /api/chats — список катгёрл с которыми есть переписка
+func GetChats(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+
+	rows, err := db.DB.Query(
+		`SELECT DISTINCT ON (m.catgirl_id) m.catgirl_id, lc.data,
+		        MAX(m.created_at) OVER (PARTITION BY m.catgirl_id) AS last_message_at,
+		        (SELECT content FROM messages WHERE user_id = $1 AND catgirl_id = m.catgirl_id ORDER BY created_at DESC LIMIT 1) AS last_message,
+		        (SELECT COUNT(*) FROM messages WHERE user_id = $1 AND catgirl_id = m.catgirl_id) AS message_count
+		 FROM messages m
+		 LEFT JOIN liked_catgirls lc ON lc.user_id = $1 AND lc.catgirl_id = m.catgirl_id
+		 WHERE m.user_id = $1
+		 ORDER BY m.catgirl_id, last_message_at DESC`,
+		userID,
+	)
+	if err != nil {
+		jsonError(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type ChatEntry struct {
+		CatgirlID     string          `json:"catgirl_id"`
+		Data          json.RawMessage `json:"data"`
+		LastMessageAt string          `json:"last_message_at"`
+		LastMessage   string          `json:"last_message"`
+		MessageCount  int             `json:"message_count"`
+	}
+
+	var chats []ChatEntry
+	for rows.Next() {
+		var e ChatEntry
+		var dataStr *string
+		var t time.Time
+		if err := rows.Scan(&e.CatgirlID, &dataStr, &t, &e.LastMessage, &e.MessageCount); err != nil {
+			continue
+		}
+		e.LastMessageAt = t.Format(time.RFC3339)
+		if dataStr != nil {
+			e.Data = json.RawMessage(*dataStr)
+		} else {
+			e.Data = json.RawMessage(`null`)
+		}
+		chats = append(chats, e)
+	}
+
+	if chats == nil {
+		chats = []ChatEntry{}
+	}
+
+	// Сортируем по времени последнего сообщения (новые сверху)
+	for i := 0; i < len(chats)-1; i++ {
+		for j := i + 1; j < len(chats); j++ {
+			if chats[j].LastMessageAt > chats[i].LastMessageAt {
+				chats[i], chats[j] = chats[j], chats[i]
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(chats)
+}
+
 // loadCharacterInfo и loadAIHistory — общие утилиты
 func loadCharacterInfo(userID int, catgirlID string) ai.CharacterInfo {
 	var dataStr string
