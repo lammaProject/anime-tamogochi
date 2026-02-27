@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getLiked, removeLiked } from "@/api/backend";
 import type { NekosImageData } from "@/api/type";
@@ -8,6 +8,7 @@ const router = useRouter();
 const items = ref<NekosImageData[]>([]);
 const selected = ref<NekosImageData | null>(null);
 const loading = ref(true);
+const loadedIds = reactive(new Set<string>());
 
 async function removeFromLiked(id: string) {
   await removeLiked(id).catch(() => {});
@@ -68,14 +69,26 @@ onMounted(async () => {
         :style="{ background: item.colors.main }"
         @click="selected = item"
       >
-        <!-- skeleton -->
-        <div class="absolute inset-0 animate-pulse bg-white/5" />
+        <!-- skeleton — виден пока картинка не загрузилась -->
+        <div
+          class="absolute inset-0 transition-opacity duration-300"
+          :class="loadedIds.has(item.id) ? 'opacity-0' : 'opacity-100'"
+          :style="{ background: `linear-gradient(135deg, ${item.colors.main}cc, ${item.colors.main}66)` }"
+        >
+          <div class="absolute inset-0 animate-pulse bg-white/5" />
+          <div class="absolute inset-0 flex items-center justify-center text-4xl opacity-20 animate-pulse">
+            🐱
+          </div>
+        </div>
         <img
           :src="item.image.compressed?.url || item.image.original.url"
           :alt="item.anime.character ?? 'cat girl'"
-          class="absolute inset-0 w-full h-full object-cover transition duration-300 group-hover:scale-105"
+          class="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+          :class="loadedIds.has(item.id) ? 'opacity-100' : 'opacity-0'"
           draggable="false"
           loading="lazy"
+          @load="loadedIds.add(item.id)"
+          @error="loadedIds.add(item.id)"
         />
         <!-- overlay -->
         <div
