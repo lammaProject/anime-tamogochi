@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { getChatHistory, sendChatMessage } from "@/api/backend";
-import type { ChatMessage } from "@/api/backend";
+import {nextTick, onMounted, ref} from "vue";
+import {useRoute, useRouter} from "vue-router";
+import type {ChatMessage} from "@/api/backend";
+import {getChatHistory, sendChatMessage} from "@/api/backend";
 
 const route     = useRoute();
 const router    = useRouter();
@@ -11,6 +11,7 @@ const catgirlId = route.params.id as string;
 // Аватарка и имя из query-параметров (переданы из LikedPage)
 const avatarUrl  = ref((route.query.img as string) || "");
 const girlName   = ref((route.query.name as string) || "Кошкодевочка");
+const routePath = ref((route.query.path as string) || "/liked");
 
 const messages  = ref<ChatMessage[]>([]);
 const input     = ref("");
@@ -77,7 +78,7 @@ function formatTime(iso: string) {
     <div class="flex items-center gap-3 mb-4">
       <button
         class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white transition flex-shrink-0"
-        @click="router.push('/liked')"
+        @click="router.push(routePath)"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />

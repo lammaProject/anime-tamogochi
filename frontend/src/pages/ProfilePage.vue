@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import { getChats } from "@/api/backend";
-import { useAuthStore } from "@/stores/authStore";
-import type { ChatEntry } from "@/api/backend";
+import {computed, onMounted, ref} from "vue";
+import {useRouter} from "vue-router";
+import type {ChatEntry} from "@/api/backend";
+import {getChats} from "@/api/backend";
+import {useAuthStore} from "@/stores/authStore";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -25,7 +25,7 @@ function goToChat(entry: ChatEntry) {
   const img =
     entry.data?.image.compressed?.url || entry.data?.image.original?.url || "";
   const name = entry.data?.anime.character || "";
-  router.push({ path: `/chat/${entry.catgirl_id}`, query: { img, name } });
+  router.push({ path: `/chat/${entry.catgirl_id}`, query: { name, img, routePath: '/profile'  } });
 }
 
 function formatTime(iso: string) {
