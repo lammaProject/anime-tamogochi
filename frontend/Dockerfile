@@ -7,9 +7,9 @@ RUN npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-# Кладём конфиг как шаблон — nginx docker entrypoint запустит envsubst автоматически
-# Подставляет только $BACKEND_URL, остальные nginx-переменные ($host и т.д.) не трогает
 COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 ENV BACKEND_URL=http://backend:8080
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/docker-entrypoint.sh"]
