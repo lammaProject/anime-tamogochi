@@ -1,18 +1,24 @@
 #!/bin/sh
 set -e
 
-# Получаем DNS из /etc/resolv.conf и подставляем в nginx.conf
-DNS=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}' | head -1)
+# Получаем первый IPv4 DNS из /etc/resolv.conf
+DNS=$(grep nameserver /etc/resolv.conf | grep -v ':' | awk '{print $2}' | head -1)
+
+# Если IPv4 не найден — берём любой (включая IPv6)
+if [ -z "$DNS" ]; then
+  DNS=$(grep nameserver /etc/resolv.conf | awk '{print $2}' | head -1)
+fi
+
 echo "Using DNS resolver: $DNS"
 
-# Подставляем DNS и BACKEND_URL в шаблон
-export DOCKER_DNS_PLACEHOLDER="$DNS"
-envsubst '${BACKEND_URL} ${DOCKER_DNS_PLACEHOLDER}' \
+# Сначала подставляем BACKEND_URL через envsubst
+# Потом заменяем DNS_PLACEHOLDER через sed
+envsubst '${BACKEND_URL}' \
   < /etc/nginx/templates/default.conf.template \
+  | sed "s|DNS_PLACEHOLDER|$DNS|g" \
   > /etc/nginx/conf.d/default.conf
 
 echo "Generated nginx config:"
 cat /etc/nginx/conf.d/default.conf
 
-# Запускаем nginx
 exec nginx -g "daemon off;"
