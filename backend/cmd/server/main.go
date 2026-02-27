@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"anime-tamogochi/backend/internal/db"
 	"anime-tamogochi/backend/internal/handler"
@@ -11,9 +13,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var allowedOrigins = map[string]bool{
-	"http://localhost:5173":    true,
-	"http://192.168.0.37:5173": true,
+// getAllowedOrigins читает ALLOWED_ORIGINS из env (через запятую)
+// Если не задано — разрешает localhost для локальной разработки
+func getAllowedOrigins() map[string]bool {
+	raw := os.Getenv("ALLOWED_ORIGINS")
+	result := map[string]bool{
+		"http://localhost:5173":    true,
+		"http://192.168.0.37:5173": true,
+	}
+	if raw != "" {
+		for _, o := range strings.Split(raw, ",") {
+			o = strings.TrimSpace(o)
+			if o != "" {
+				result[o] = true
+			}
+		}
+	}
+	return result
 }
 
 func main() {
@@ -48,6 +64,7 @@ func main() {
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
+	allowedOrigins := getAllowedOrigins()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 

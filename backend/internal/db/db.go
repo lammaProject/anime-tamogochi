@@ -12,14 +12,19 @@ import (
 var DB *sql.DB
 
 func Connect() {
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		getEnv("DB_HOST", "localhost"),
-		getEnv("DB_PORT", "5432"),
-		getEnv("DB_USER", "postgres"),
-		getEnv("DB_PASSWORD", "postgres"),
-		getEnv("DB_NAME", "animetamo"),
-	)
+	// Если задана DATABASE_URL (Railway, Render и т.д.) — используем её напрямую
+	// Иначе собираем DSN из отдельных переменных (локальная разработка)
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = fmt.Sprintf(
+			"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			getEnv("DB_HOST", "localhost"),
+			getEnv("DB_PORT", "5432"),
+			getEnv("DB_USER", "postgres"),
+			getEnv("DB_PASSWORD", "postgres"),
+			getEnv("DB_NAME", "animetamo"),
+		)
+	}
 
 	var err error
 	DB, err = sql.Open("postgres", dsn)
