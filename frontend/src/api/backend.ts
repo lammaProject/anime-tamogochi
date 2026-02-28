@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "",
+  baseURL: "",
   withCredentials: true, // куки
 });
 
@@ -51,4 +51,7 @@ export const getChatHistory = (catgirlId: string) =>
   api.get<ChatMessage[]>(`/api/chat/${catgirlId}`);
 
 export const sendChatMessage = (catgirlId: string, content: string) =>
-  api.post<{ user_message: ChatMessage; bot_message: ChatMessage }>(`/api/chat/${catgirlId}`, { content });
+  api.post<{ user_message: ChatMessage; bot_message: ChatMessage }>(
+    `/api/chat/${catgirlId}`,
+    { content },
+  );

@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCardStore } from "@/stores/cardStore";
 import { useAuthStore } from "@/stores/authStore";
+import PwaInstallBanner from "@/components/PwaInstallBanner.vue";
 
 const router = useRouter();
 const route  = useRoute();
@@ -105,5 +106,8 @@ const isProfile = computed(() => route.path === "/profile");
     >
       <RouterView />
     </main>
+
+    <!-- PWA install banner -->
+    <PwaInstallBanner />
   </div>
 </template>
