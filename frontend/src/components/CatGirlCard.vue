@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { getCatGirls } from "@/api/api";
 import type { NekosImageData } from "@/api/type";
 import { useCardStore } from "@/stores/cardStore";
 import { addLiked } from "@/api/backend";
+import { useQuery } from "@tanstack/vue-query";
 
 const cardStore = useCardStore();
 
@@ -14,6 +15,7 @@ const error = ref<string | null>(null);
 const currentIndex = ref(0);
 const finished = ref(false);
 
+currentIndex.value = cardStore.currentIndex;
 // ─── preload ──────────────────────────────────────────────────────────────────
 const PRELOAD_AHEAD = 6;
 const preloaded = new Set<string>();
@@ -76,7 +78,11 @@ watch(
   current,
   (card) => {
     if (card) {
-      cardStore.setCurrentCard(card.colors.main, card.colors.palette);
+      cardStore.setCurrentCard(
+        card.colors.main,
+        card.colors.palette,
+        currentIndex.value,
+      );
       imgLoaded.value = false;
     }
   },
@@ -194,23 +200,17 @@ function onPointerUp() {
   }
 }
 
-const fetchData = async () => {
-  try {
-    const data = await getCatGirls();
-    if (data?.images) {
-      images.value = data.images;
-      preloadImages(0);
-    }
-  } catch {
-    error.value = "Ошибка загрузки";
-  } finally {
+const { data, refetch } = useQuery({
+  queryKey: ["cards"],
+  queryFn: getCatGirls,
+});
+
+watchEffect(() => {
+  if (data.value?.images) {
+    images.value = data.value.images;
+    preloadImages(0);
     loading.value = false;
   }
-};
-
-// ─── lifecycle ───────────────────────────────────────────────────────────────
-onMounted(async () => {
-  void fetchData();
 });
 
 const likedCount = ref(0); // обновляется в процессе свайпов
@@ -247,7 +247,7 @@ const likedCount = ref(0); // обновляется в процессе сва�
       class="mt-2 px-8 py-3 rounded-2xl bg-white/10 backdrop-blur text-white font-semibold hover:bg-white/20 transition border border-white/20"
       @click="
         async () => {
-          await fetchData();
+          await refetch();
           finished = false;
           currentIndex = 0;
         }
