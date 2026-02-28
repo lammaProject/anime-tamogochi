@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { getCatGirls } from "@/api/api";
 import type { NekosImageData } from "@/api/type";
 import { useCardStore } from "@/stores/cardStore";
@@ -194,20 +194,11 @@ function onPointerUp() {
   }
 }
 
-// ─── клавиатура ──────────────────────────────────────────────────────────────
-function onKeyDown(e: KeyboardEvent) {
-  if (e.key === "ArrowLeft") commitSwipe("left");
-  if (e.key === "ArrowRight") commitSwipe("right");
-}
-
-// ─── lifecycle ───────────────────────────────────────────────────────────────
-onMounted(async () => {
-  window.addEventListener("keydown", onKeyDown);
+const fetchData = async () => {
   try {
     const data = await getCatGirls();
     if (data?.images) {
       images.value = data.images;
-      // Предзагружаем первые N картинок сразу
       preloadImages(0);
     }
   } catch {
@@ -215,9 +206,12 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+};
 
-onUnmounted(() => window.removeEventListener("keydown", onKeyDown));
+// ─── lifecycle ───────────────────────────────────────────────────────────────
+onMounted(async () => {
+  void fetchData();
+});
 
 const likedCount = ref(0); // обновляется в процессе свайпов
 </script>
@@ -252,8 +246,11 @@ const likedCount = ref(0); // обновляется в процессе сва�
     <button
       class="mt-2 px-8 py-3 rounded-2xl bg-white/10 backdrop-blur text-white font-semibold hover:bg-white/20 transition border border-white/20"
       @click="
-        currentIndex = 0;
-        finished = false;
+        async () => {
+          await fetchData();
+          finished = false;
+          currentIndex = 0;
+        }
       "
     >
       Сначала
