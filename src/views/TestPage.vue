@@ -1,9 +1,6 @@
-<template>
-  <div>This is a test page</div>
+# -*- coding: utf-8 -*-<template>
 </template>
-
-<script lang="ts">
-export default {
-  name: 'TestPage'
-}
+<script>
 </script>
+<style scoped>
+</style>
