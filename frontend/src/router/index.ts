@@ -5,6 +5,7 @@ import LikedPage   from "@/pages/LikedPage.vue";
 import LoginPage   from "@/pages/LoginPage.vue";
 import ChatPage    from "@/pages/ChatPage.vue";
 import ProfilePage from "@/pages/ProfilePage.vue";
+import TestPage    from "@/pages/TestPage.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -14,13 +15,13 @@ const router = createRouter({
     { path: "/profile",   component: ProfilePage, meta: { auth: true  } },
     { path: "/chat/:id",  component: ChatPage,    meta: { auth: true  } },
     { path: "/login",     component: LoginPage,   meta: { auth: false } },
+    { path: "/test",      component: TestPage,    meta: { auth: true  } },
   ],
 });
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
-  // Ждём первичную загрузку
   if (auth.loading) await auth.init();
 
   if (to.meta.auth && !auth.isLoggedIn) return "/login";
